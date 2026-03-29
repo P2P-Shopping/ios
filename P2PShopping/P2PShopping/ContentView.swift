@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var locationManager = LocationPermissionManager()
+    @EnvironmentObject private var locationManager: LocationPermissionManager
 
     var body: some View {
         VStack(spacing: 24) {
