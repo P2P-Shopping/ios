@@ -6,14 +6,31 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		E786C3B02F9E59F8005AE8F9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = E7121D722F798F8600223775 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E7121D792F798F8600223775;
+			remoteInfo = P2PShopping;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		E7121D7A2F798F8600223775 /* P2PShopping.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = P2PShopping.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E786C3A72F9E587F005AE8F9 /* P2PShopping.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = P2PShopping.xctestplan; sourceTree = "<group>"; };
+		E786C3AC2F9E59F8005AE8F9 /* P2PShoppingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = P2PShoppingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E7121D7C2F798F8600223775 /* P2PShopping */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = P2PShopping;
+			sourceTree = "<group>";
+		};
+		E786C3AD2F9E59F8005AE8F9 /* P2PShoppingTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = P2PShoppingTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -26,13 +43,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E786C3A92F9E59F7005AE8F9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		E7121D712F798F8600223775 = {
 			isa = PBXGroup;
 			children = (
+				E786C3A72F9E587F005AE8F9 /* P2PShopping.xctestplan */,
 				E7121D7C2F798F8600223775 /* P2PShopping */,
+				E786C3AD2F9E59F8005AE8F9 /* P2PShoppingTests */,
 				E7121D7B2F798F8600223775 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				E7121D7A2F798F8600223775 /* P2PShopping.app */,
+				E786C3AC2F9E59F8005AE8F9 /* P2PShoppingTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +97,29 @@
 			productReference = E7121D7A2F798F8600223775 /* P2PShopping.app */;
 			productType = "com.apple.product-type.application";
 		};
+		E786C3AB2F9E59F7005AE8F9 /* P2PShoppingTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E786C3B22F9E59F8005AE8F9 /* Build configuration list for PBXNativeTarget "P2PShoppingTests" */;
+			buildPhases = (
+				E786C3A82F9E59F7005AE8F9 /* Sources */,
+				E786C3A92F9E59F7005AE8F9 /* Frameworks */,
+				E786C3AA2F9E59F7005AE8F9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E786C3B12F9E59F8005AE8F9 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				E786C3AD2F9E59F8005AE8F9 /* P2PShoppingTests */,
+			);
+			name = P2PShoppingTests;
+			packageProductDependencies = (
+			);
+			productName = P2PShoppingTests;
+			productReference = E786C3AC2F9E59F8005AE8F9 /* P2PShoppingTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -82,6 +132,10 @@
 				TargetAttributes = {
 					E7121D792F798F8600223775 = {
 						CreatedOnToolsVersion = 26.4;
+					};
+					E786C3AB2F9E59F7005AE8F9 = {
+						CreatedOnToolsVersion = 26.4.1;
+						TestTargetID = E7121D792F798F8600223775;
 					};
 				};
 			};
@@ -100,12 +154,20 @@
 			projectRoot = "";
 			targets = (
 				E7121D792F798F8600223775 /* P2PShopping */,
+				E786C3AB2F9E59F7005AE8F9 /* P2PShoppingTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		E7121D782F798F8600223775 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E786C3AA2F9E59F7005AE8F9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +184,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E786C3A82F9E59F7005AE8F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E786C3B12F9E59F8005AE8F9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E7121D792F798F8600223775 /* P2PShopping */;
+			targetProxy = E786C3B02F9E59F8005AE8F9 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		E7121D832F798F8700223775 /* Debug */ = {
@@ -308,6 +385,46 @@
 			};
 			name = Release;
 		};
+		E786C3B32F9E59F8005AE8F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.p2pshopping.P2PShoppingTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/P2PShopping.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/P2PShopping";
+			};
+			name = Debug;
+		};
+		E786C3B42F9E59F8005AE8F9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.p2pshopping.P2PShoppingTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/P2PShopping.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/P2PShopping";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -325,6 +442,15 @@
 			buildConfigurations = (
 				E7121D862F798F8700223775 /* Debug */,
 				E7121D872F798F8700223775 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E786C3B22F9E59F8005AE8F9 /* Build configuration list for PBXNativeTarget "P2PShoppingTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E786C3B32F9E59F8005AE8F9 /* Debug */,
+				E786C3B42F9E59F8005AE8F9 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
