@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "79965B66-4F11-4770-8774-7D6882E4788D",
+      "isDefault" : true,
+      "name" : "Default",
+      "options" : {
+        "codeCoverage" : true,
+        "targets" : [
+          {
+            "target" : {
+              "containerPath" : "container:P2PShopping.xcodeproj",
+              "identifier" : "P2PShopping",
+              "name" : "P2PShopping"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:P2PShopping.xcodeproj",
+      "identifier" : "P2PShopping",
+      "name" : "P2PShopping"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:P2PShopping.xcodeproj",
+        "identifier" : "P2PShoppingTests",
+        "name" : "P2PShoppingTests"
+      }
+    }
+  ],
+  "version" : 1
+}
