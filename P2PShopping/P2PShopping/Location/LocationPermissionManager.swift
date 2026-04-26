@@ -23,6 +23,13 @@ class LocationPermissionManager: NSObject, ObservableObject {
     @Published var longitude: Double?
     @Published var accuracy: Double?
 
+    // MARK: - Public Properties
+    
+    /// Expunem precizia dorită pentru testare. Task #33
+    var desiredAccuracy: CLLocationAccuracy {
+        return locationManager.desiredAccuracy
+    }
+
     // MARK: - Private
 
     private let locationManager = CLLocationManager()
