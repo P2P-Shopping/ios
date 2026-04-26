@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var locationManager: LocationPermissionManager
+    @EnvironmentObject private var locationService: LocationService
 
     var body: some View {
         VStack(spacing: 24) {
@@ -19,6 +20,23 @@ struct ContentView: View {
                 Label("Location access granted", systemImage: "checkmark.circle.fill")
                     .foregroundColor(.green)
                     .font(.headline)
+                    
+                // UI pentru Task-ul #182 (Pornire/Oprire Background Tracking)
+                if locationService.isTracking {
+                    Button(action: stopTrackingAction) {
+                        Label("Stop Background Tracking", systemImage: "stop.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                } else {
+                    Button(action: startTrackingAction) {
+                        Label("Start Background Tracking", systemImage: "play.circle.fill")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                }
 
             } else if locationManager.permissionDenied {
                 Label("Location access denied", systemImage: "xmark.circle.fill")
@@ -30,9 +48,7 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
 
-                Button("Open Settings") {
-                    locationManager.openAppSettings()
-                }
+                Button("Open Settings", action: openSettingsAction)
                 .buttonStyle(.borderedProminent)
 
             } else {
@@ -41,13 +57,29 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .padding(.horizontal)
 
-                Button("Allow Location Access") {
-                    locationManager.requestWhenInUsePermission()
-                }
+                Button("Allow Location Access", action: allowLocationAction)
                 .buttonStyle(.borderedProminent)
             }
         }
         .padding()
+    }
+    
+    // MARK: - Testable Actions
+    
+    func stopTrackingAction() {
+        locationService.stopTracking()
+    }
+    
+    func startTrackingAction() {
+        locationService.startTracking()
+    }
+    
+    func openSettingsAction() {
+        locationManager.openAppSettings()
+    }
+    
+    func allowLocationAction() {
+        locationManager.requestWhenInUsePermission()
     }
 }
 

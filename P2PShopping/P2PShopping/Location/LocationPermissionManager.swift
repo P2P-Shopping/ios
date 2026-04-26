@@ -63,6 +63,20 @@ class LocationPermissionManager: NSObject, ObservableObject {
             break
         }
     }
+    
+    /// Triggers the always permission dialog (pentru Background Tracking - Task #182).
+    func requestAlwaysPermission() {
+        switch locationManager.authorizationStatus {
+        case .notDetermined, .authorizedWhenInUse:
+            locationManager.requestAlwaysAuthorization()
+        case .denied, .restricted:
+            permissionDenied = true
+        case .authorizedAlways:
+            permissionGranted = true
+        @unknown default:
+            break
+        }
+    }
 
     /// Opens iOS Settings so the user can manually enable location.
     func openAppSettings() {

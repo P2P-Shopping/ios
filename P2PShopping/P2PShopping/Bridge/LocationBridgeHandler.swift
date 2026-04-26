@@ -1,6 +1,7 @@
 import Foundation
 import WebKit
 import Combine
+import CoreLocation
 
 /// Issue #27 - [Bridge] Expose requestLocationPermission() to JS (iOS)
 class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
@@ -41,6 +42,33 @@ class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
                     self?.sendResult(status: status, to: message.webView)
                 }
                 .store(in: &cancellables)
+        }
+    }
+    
+    // Expus pentru testare (Coverage)
+    func test_sendResult(status: CLAuthorizationStatus, to webView: WKWebView?) {
+        sendResult(status: status, to: webView)
+    }
+
+    func test_handleAction(action: String, webView: WKWebView?) {
+        if action == "requestLocationPermission" {
+            let currentStatus = self.permissionManager.authorizationStatus
+            if currentStatus != .notDetermined {
+                sendResult(status: currentStatus, to: webView)
+                return
+            }
+            
+            Task { @MainActor in
+                self.permissionManager.requestWhenInUsePermission()
+                self.permissionManager.$authorizationStatus
+                    .filter { $0 != .notDetermined }
+                    .first()
+                    .timeout(.seconds(5), scheduler: DispatchQueue.main)
+                    .sink { [weak self] status in
+                        self?.sendResult(status: status, to: webView)
+                    }
+                    .store(in: &cancellables)
+            }
         }
     }
     
