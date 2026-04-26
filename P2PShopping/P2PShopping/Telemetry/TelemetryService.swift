@@ -44,9 +44,11 @@ class TelemetryService {
             "storeId": storeId,
             "itemId": itemId,
             "triggerType": triggerType,
-            "timestamp": timestamp,
-            "accuracy": accuracy ?? 0.0
+            "timestamp": timestamp
         ]
+        
+        // Adăugăm precizia conform sugestiei CodeRabbit (NSNull dacă e nil)
+        payload["accuracy"] = accuracy ?? NSNull()
         
         // Adăugăm coordonatele doar dacă sunt disponibile (GDPR compliant)
         if let lat = latitude, let lng = longitude {
