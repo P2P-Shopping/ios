@@ -29,10 +29,15 @@ final class TelemetryTests: XCTestCase {
         let mockLoc = CLLocation(latitude: 45.0, longitude: 25.0)
         locManager.locationManager(CLLocationManager(), didUpdateLocations: [mockLoc])
         
-        // 3. Telemetry Service
+        // 3. Telemetry Service - Testăm payload-ul (CodeRabbit fix)
         let telemetry = TelemetryService.shared
-        telemetry.sendLocationPing(storeId: "s", itemId: "i", triggerType: "t", latitude: 1, longitude: 1, accuracy: 1)
-        telemetry.sendLocationPing(storeId: "s", itemId: "i", triggerType: "t", latitude: nil, longitude: nil, accuracy: nil)
+        let fullPayload = telemetry.makePayload(storeId: "s", itemId: "i", triggerType: "t", latitude: 1, longitude: 1, accuracy: 1)
+        XCTAssertEqual(fullPayload["storeId"] as? String, "s")
+        XCTAssertEqual(fullPayload["lat"] as? Double, 1)
+        
+        let nullPayload = telemetry.makePayload(storeId: "s", itemId: "i", triggerType: "t", latitude: nil, longitude: nil, accuracy: nil)
+        XCTAssertTrue(nullPayload["lat"] is NSNull)
+        XCTAssertTrue(nullPayload["accuracy"] is NSNull)
         
         // 4. ContentView
         // Cazul 1: Permisiune acordată
