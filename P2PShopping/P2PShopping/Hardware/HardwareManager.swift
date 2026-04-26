@@ -18,8 +18,10 @@ class HardwareManager: NSObject, ObservableObject {
     /// Inițializează hardware-ul. Task #148
     func initialize() {
         print("HardwareManager: Initializing...")
-        if connectToDevice() {
-            isInitialized = true
+        let success = connectToDevice()
+        isInitialized = success
+        
+        if success {
             print("HardwareManager: Initialized successfully")
         } else {
             print("HardwareManager: Initialization failed")

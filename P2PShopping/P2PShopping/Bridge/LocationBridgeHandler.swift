@@ -1,13 +1,16 @@
 import Foundation
 import WebKit
+import Combine
 
 /// Issue #27 - [Bridge] Expose requestLocationPermission() to JS (iOS)
 class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
     
     private let permissionManager: LocationPermissionManager
+    private var cancellables = Set<AnyCancellable>()
     
     init(permissionManager: LocationPermissionManager) {
         self.permissionManager = permissionManager
+        super.init()
     }
     
     /// Called when JS calls: window.webkit.messageHandlers.locationBridge.postMessage("requestLocationPermission")
@@ -19,16 +22,46 @@ class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
               let action = message.body as? String,
               action == "requestLocationPermission" else { return }
         
+        // Dacă permisiunea este deja acordată sau refuzată, trimitem rezultatul imediat
+        let currentStatus = self.permissionManager.authorizationStatus
+        if currentStatus != .notDetermined {
+            sendResult(status: currentStatus, to: message.webView)
+            return
+        }
+        
+        // Altfel, cerem permisiunea și așteptăm răspunsul via Combine
         Task { @MainActor in
             self.permissionManager.requestWhenInUsePermission()
             
-            // Wait for the permission result then send it back to JS
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            
-            let result = self.permissionManager.permissionGranted ? "Granted" : "Denied"
-            
-            let js = "window.onLocationPermissionResult('\(result)')"
-            message.webView?.evaluateJavaScript(js, completionHandler: nil)
+            self.permissionManager.$authorizationStatus
+                .filter { $0 != .notDetermined }
+                .first() // Luăm doar prima modificare validă
+                .timeout(.seconds(30), scheduler: DispatchQueue.main) // Timeout de siguranță
+                .sink { [weak self] status in
+                    self?.sendResult(status: status, to: message.webView)
+                }
+                .store(in: &cancellables)
+        }
+    }
+    
+    private func sendResult(status: CLAuthorizationStatus, to webView: WKWebView?) {
+        let result: String
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            result = "Granted"
+        case .denied:
+            result = "Denied"
+        case .restricted:
+            result = "Restricted"
+        case .notDetermined:
+            result = "NotDetermined"
+        @unknown default:
+            result = "Denied"
+        }
+        
+        let js = "window.onLocationPermissionResult('\(result)')"
+        DispatchQueue.main.async {
+            webView?.evaluateJavaScript(js, completionHandler: nil)
         }
     }
 }
