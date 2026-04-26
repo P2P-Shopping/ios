@@ -330,6 +330,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_TelemetryEndpoint = "http://localhost:8080/api/telemetry/ping";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "P2P Shopping needs your location to remember where you found items in the store.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -362,6 +363,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_TelemetryEndpoint = "https://api.p2p-shopping.com/api/telemetry/ping";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "P2P Shopping needs your location to remember where you found items in the store.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

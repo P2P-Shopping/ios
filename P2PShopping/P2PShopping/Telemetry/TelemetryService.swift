@@ -5,7 +5,21 @@ import Foundation
 class TelemetryService {
     static let shared = TelemetryService()
     
-    private let endpoint = "http://localhost:8080/api/telemetry/ping" // URL-ul de bază pentru server
+    private var endpointURL: URL? {
+        let key = "TelemetryEndpoint"
+        let value = Bundle.main.object(forInfoDictionaryKey: key) as? String
+        
+        if let urlString = value, !urlString.isEmpty {
+            return URL(string: urlString)
+        }
+        
+        #if targetEnvironment(simulator)
+        // Fallback la localhost doar pe simulator dacă lipsește cheia în plist
+        return URL(string: "http://localhost:8080/api/telemetry/ping")
+        #else
+        return nil
+        #endif
+    }
     
     private init() {}
     
@@ -18,6 +32,11 @@ class TelemetryService {
         longitude: Double?,
         accuracy: Double?
     ) {
+        guard let url = endpointURL else {
+            print("TelemetryService: Error - Invalid or missing endpoint URL")
+            return
+        }
+
         let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
         
         // Construim payload-ul conform specificațiilor (Task #34)
@@ -40,8 +59,6 @@ class TelemetryService {
         
         // Privacy: Logăm doar că trimitem ping-ul, nu și valorile exacte
         print("TelemetryService: Sending ping to backend... [storeId: \(storeId), triggerType: \(triggerType)]")
-        
-        guard let url = URL(string: endpoint) else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
