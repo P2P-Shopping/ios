@@ -30,6 +30,22 @@ class TelemetryService {
         #endif
     }
     
+    private var batchEndpointURL: URL? {
+        let key = "TelemetryBatchEndpoint"
+        let value = Bundle.main.object(forInfoDictionaryKey: key) as? String
+        
+        if let urlString = value, !urlString.isEmpty {
+            return URL(string: urlString)
+        }
+        
+        #if targetEnvironment(simulator)
+        return URL(string: "http://localhost:8080/api/v1/telemetry/batch")
+        #else
+        // Fallback or use environment variables
+        return URL(string: "https://your-production-url.com/api/v1/telemetry/batch")
+        #endif
+    }
+    
     init(session: URLSessionProtocol = URLSession.shared) {
         self.session = session
     }
@@ -115,5 +131,42 @@ class TelemetryService {
                 }
             }
         }.resume()
+    }
+    
+    /// Sends a batch of pings to the server. Matches Android's ApiService.sendBatchPings.
+    func sendBatch(_ batch: TelemetryBatch) async -> Bool {
+        guard let url = batchEndpointURL else {
+            print("TelemetryService: Error - Invalid or missing batch endpoint URL")
+            return false
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONEncoder().encode(batch)
+        } catch {
+            print("TelemetryService: Error serializing batch JSON: \(error)")
+            return false
+        }
+        
+        return await withCheckedContinuation { continuation in
+            session.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("TelemetryService: Batch network error: \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                    return
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse {
+                    // Same strict deletion policy as Android: Only 2xx means success
+                    let isSuccess = (200...299).contains(httpResponse.statusCode)
+                    continuation.resume(returning: isSuccess)
+                } else {
+                    continuation.resume(returning: false)
+                }
+            }.resume()
+        }
     }
 }

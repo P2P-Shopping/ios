@@ -1,10 +1,8 @@
 import Foundation
 import CoreLocation
-import UIKit
-import Foundation
 import Combine
-import CoreLocation
 import UIKit
+import CoreMotion
 
 /// Manages location permission requests for the P2P Shopping app.
 /// Issue #26 - [Native] [iOS] Implement when-in-use location permission flow
@@ -33,6 +31,17 @@ class LocationPermissionManager: NSObject, ObservableObject {
     // MARK: - Private
 
     private let locationManager = CLLocationManager()
+    
+    // Motion detection variables matching Android's LocationService
+    private let motionManager = CMMotionManager()
+    private var isMoving = true
+    private var lastMoveTime: TimeInterval = 0
+    private let moveDebounceMs: TimeInterval = 2.0
+    
+    // Device/Store identifiers
+    var currentDeviceId = UUID().uuidString
+    var currentStoreId = "unknown"
+    var currentItemId = "unknown"
 
     // MARK: - Init
 
@@ -80,16 +89,64 @@ class LocationPermissionManager: NSObject, ObservableObject {
             permissionGranted = true
             permissionDenied = false
             locationManager.startUpdatingLocation()
+            startMotionDetection()
         case .denied, .restricted:
             permissionGranted = false
             permissionDenied = true
             locationManager.stopUpdatingLocation()
+            stopMotionDetection()
         case .notDetermined:
             permissionGranted = false
             permissionDenied = false
         @unknown default:
             break
         }
+    }
+    
+    // MARK: - Motion Detection (Android Parity)
+    
+    private func startMotionDetection() {
+        guard motionManager.isAccelerometerAvailable else { return }
+        motionManager.accelerometerUpdateInterval = 0.5 // delay_normal equivalent
+        
+        motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
+            guard let self = self, let data = data else { return }
+            
+            let x = data.acceleration.x
+            let y = data.acceleration.y
+            let z = data.acceleration.z
+            
+            let movingNow = self.calculateIsMoving(x: x, y: y, z: z)
+            let currentTime = Date().timeIntervalSince1970
+            
+            if movingNow {
+                if self.lastMoveTime == 0 { self.lastMoveTime = currentTime }
+                if !self.isMoving && (currentTime - self.lastMoveTime > self.moveDebounceMs) {
+                    self.isMoving = true
+                    print("TelemetryService: Motion detected")
+                }
+                if self.isMoving { self.lastMoveTime = currentTime }
+            } else {
+                if self.isMoving && (currentTime - self.lastMoveTime > self.moveDebounceMs) {
+                    self.isMoving = false
+                    print("TelemetryService: Stationary")
+                } else if !self.isMoving {
+                    self.lastMoveTime = currentTime
+                }
+            }
+        }
+    }
+    
+    private func stopMotionDetection() {
+        motionManager.stopAccelerometerUpdates()
+    }
+    
+    private func calculateIsMoving(x: Double, y: Double, z: Double) -> Bool {
+        // iOS returns acceleration in Gs (1.0 G = 9.81 m/s^2).
+        // Android magnitude formula translation to maintain the "> 0.5" threshold:
+        let magnitude = sqrt(x * x + y * y + z * z)
+        let acceleration = abs(magnitude - 1.0) * 9.81
+        return acceleration > 0.5
     }
 }
 
@@ -113,6 +170,24 @@ extension LocationPermissionManager: CLLocationManagerDelegate {
             
             // Privacy/GDPR: Logăm doar precizia, nu și coordonatele exacte
             print("LocationManager: Location updated (Accuracy: \(String(format: "%.2f", location.horizontalAccuracy))m)")
+            
+            // If we are stationary, iOS might still occasionally fire. Check our motion flag.
+            guard self.isMoving else { return }
+            
+            // Dispatch offline-first ping
+            let ping = TelemetryPing(
+                deviceId: self.currentDeviceId,
+                storeId: self.currentStoreId,
+                itemId: self.currentItemId,
+                triggerType: "BACKGROUND",
+                lat: location.coordinate.latitude,
+                lng: location.coordinate.longitude,
+                accuracyMeters: location.horizontalAccuracy,
+                timestamp: Int64(Date().timeIntervalSince1970 * 1000),
+                pingId: UUID().uuidString
+            )
+            
+            TelemetryDispatcher.shared.dispatch(ping: ping)
         }
     }
 }
