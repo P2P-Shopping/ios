@@ -16,6 +16,19 @@ class LocationPermissionManager: NSObject, ObservableObject {
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var permissionDenied: Bool = false
     @Published var permissionGranted: Bool = false
+    
+    // Date de locație pentru Task #33
+    @Published var lastLocation: CLLocation?
+    @Published var latitude: Double?
+    @Published var longitude: Double?
+    @Published var accuracy: Double?
+
+    // MARK: - Public Properties
+    
+    /// Expunem precizia dorită pentru testare. Task #33
+    var desiredAccuracy: CLLocationAccuracy {
+        return locationManager.desiredAccuracy
+    }
 
     // MARK: - Private
 
@@ -26,8 +39,13 @@ class LocationPermissionManager: NSObject, ObservableObject {
     override init() {
         super.init()
         locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest // Cerință Task #33
         authorizationStatus = locationManager.authorizationStatus
         updatePermissionState(for: locationManager.authorizationStatus)
+        
+        if locationManager.authorizationStatus == .authorizedWhenInUse || locationManager.authorizationStatus == .authorizedAlways {
+            locationManager.startUpdatingLocation()
+        }
     }
 
     // MARK: - Public API
@@ -61,9 +79,11 @@ class LocationPermissionManager: NSObject, ObservableObject {
         case .authorizedWhenInUse, .authorizedAlways:
             permissionGranted = true
             permissionDenied = false
+            locationManager.startUpdatingLocation()
         case .denied, .restricted:
             permissionGranted = false
             permissionDenied = true
+            locationManager.stopUpdatingLocation()
         case .notDetermined:
             permissionGranted = false
             permissionDenied = false
@@ -80,6 +100,19 @@ extension LocationPermissionManager: CLLocationManagerDelegate {
         Task { @MainActor in
             self.authorizationStatus = manager.authorizationStatus
             self.updatePermissionState(for: manager.authorizationStatus)
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        
+        Task { @MainActor in
+            self.latitude = location.coordinate.latitude
+            self.longitude = location.coordinate.longitude
+            self.accuracy = location.horizontalAccuracy
+            
+            // Privacy/GDPR: Logăm doar precizia, nu și coordonatele exacte
+            print("LocationManager: Location updated (Accuracy: \(String(format: "%.2f", location.horizontalAccuracy))m)")
         }
     }
 }
