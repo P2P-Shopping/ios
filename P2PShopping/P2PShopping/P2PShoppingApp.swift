@@ -13,8 +13,9 @@ struct P2PShoppingApp: App {
     
     @StateObject private var locationManager = LocationPermissionManager()
     @StateObject private var hardwareManager = HardwareManager.shared
+    @StateObject private var locationService = LocationService.shared // Task #182
     
-    // Componente pentru bridge persistate pentru a preveni deealocarea (CodeRabbit fix)
+    // Componente pentru bridge persistate pentru a preveni deealocarea
     private let webViewConfiguration = WKWebViewConfiguration()
     @State private var bridgeHandler: LocationBridgeHandler?
     
@@ -26,9 +27,12 @@ struct P2PShoppingApp: App {
             ContentView()
                 .environmentObject(locationManager)
                 .environmentObject(hardwareManager)
+                .environmentObject(locationService) // Adăugat pentru UI
                 .onAppear {
                     setupBridge()
                     initializeHardware()
+                    // Pornim NetworkMonitor la startup (Task #184)
+                    _ = NetworkMonitor.shared
                 }
         }
     }

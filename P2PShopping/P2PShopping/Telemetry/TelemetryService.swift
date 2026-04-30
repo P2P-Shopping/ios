@@ -1,8 +1,10 @@
 import Foundation
+import UIKit
+import CoreLocation
 
 /// Protocol pentru a permite injectarea URLSession în teste.
 protocol URLSessionProtocol {
-    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
+    func dataTask(with request: URLRequest, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
 }
 
 extension URLSession: URLSessionProtocol {}
@@ -23,18 +25,22 @@ class TelemetryService {
         }
         
         #if targetEnvironment(simulator)
-        // Fallback la localhost doar pe simulator dacă lipsește cheia în plist
-        return URL(string: "http://localhost:8080/api/telemetry/ping")
+        return URL(string: "http://localhost:8080/api/v1/telemetry/ping")
         #else
         return nil
         #endif
+    }
+    
+    private var batchEndpointURL: URL? {
+        // Înlocuim componenta finală a căii (/ping) cu /batch pentru endpoint-ul de sincronizare
+        return endpointURL?.deletingLastPathComponent().appendingPathComponent("batch")
     }
     
     init(session: URLSessionProtocol = URLSession.shared) {
         self.session = session
     }
     
-    /// Construiește payload-ul JSON. Task #34 & CodeRabbit fix
+    /// Construiește payload-ul JSON. Task #34 & #183
     func makePayload(
         storeId: String,
         itemId: String,
@@ -46,6 +52,7 @@ class TelemetryService {
         let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
         
         var payload: [String: Any] = [
+            "deviceId": UIDevice.uniqueId, // Adăugat conform noului model
             "storeId": storeId,
             "itemId": itemId,
             "triggerType": triggerType,
@@ -115,5 +122,36 @@ class TelemetryService {
                 }
             }
         }.resume()
+    }
+    
+    /// Trimite un calup de date (batch) și returnează true dacă a fost acceptat de server (HTTP 202). Task #184
+    func sendBatchPings(payload: [[String: Any]]) async -> Bool {
+        guard let url = batchEndpointURL else { return false }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
+        } catch {
+            print("TelemetryService: Eroare serializare batch JSON: \(error)")
+            return false
+        }
+        
+        return await withCheckedContinuation { continuation in
+            session.dataTask(with: request) { data, response, error in
+                if let _ = error {
+                    continuation.resume(returning: false)
+                    return
+                }
+                
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 202 {
+                    continuation.resume(returning: true)
+                } else {
+                    continuation.resume(returning: false)
+                }
+            }.resume()
+        }
     }
 }

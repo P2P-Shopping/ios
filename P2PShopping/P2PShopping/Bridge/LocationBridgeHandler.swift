@@ -1,6 +1,7 @@
 import Foundation
 import WebKit
 import Combine
+import CoreLocation
 
 /// Issue #27 - [Bridge] Expose requestLocationPermission() to JS (iOS)
 class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
@@ -22,10 +23,25 @@ class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
               let action = message.body as? String,
               action == "requestLocationPermission" else { return }
         
+        requestLocationPermissionAndSendResult(webView: message.webView)
+    }
+    
+    // Expus pentru testare (Coverage)
+    func test_sendResult(status: CLAuthorizationStatus, to webView: WKWebView?) {
+        sendResult(status: status, to: webView)
+    }
+
+    func test_handleAction(action: String, webView: WKWebView?) {
+        if action == "requestLocationPermission" {
+            requestLocationPermissionAndSendResult(webView: webView, timeout: 5)
+        }
+    }
+    
+    private func requestLocationPermissionAndSendResult(webView: WKWebView?, timeout: Int = 30) {
         // Dacă permisiunea este deja acordată sau refuzată, trimitem rezultatul imediat
         let currentStatus = self.permissionManager.authorizationStatus
         if currentStatus != .notDetermined {
-            sendResult(status: currentStatus, to: message.webView)
+            sendResult(status: currentStatus, to: webView)
             return
         }
         
@@ -36,9 +52,9 @@ class LocationBridgeHandler: NSObject, WKScriptMessageHandler {
             self.permissionManager.$authorizationStatus
                 .filter { $0 != .notDetermined }
                 .first() // Luăm doar prima modificare validă
-                .timeout(.seconds(30), scheduler: DispatchQueue.main) // Timeout de siguranță
+                .timeout(.seconds(Double(timeout)), scheduler: DispatchQueue.main) // Timeout de siguranță
                 .sink { [weak self] status in
-                    self?.sendResult(status: status, to: message.webView)
+                    self?.sendResult(status: status, to: webView)
                 }
                 .store(in: &cancellables)
         }

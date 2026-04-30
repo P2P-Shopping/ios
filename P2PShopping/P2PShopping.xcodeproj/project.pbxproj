@@ -18,13 +18,26 @@
 
 /* Begin PBXFileReference section */
 		E7121D7A2F798F8600223775 /* P2PShopping.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = P2PShopping.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		E786C3A72F9E587F005AE8F9 /* P2PShopping.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = P2PShopping.xctestplan; sourceTree = "<group>"; };
+		E786C3A72F9E587F005AE8F9 /* P2PShopping.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = P2PShopping.xctestplan; sourceTree = "<group>"; };
 		E786C3AC2F9E59F8005AE8F9 /* P2PShoppingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = P2PShoppingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		E786C4142F9E85D9005AE8F9 /* Exceptions for "P2PShopping" folder in "P2PShopping" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = E7121D792F798F8600223775 /* P2PShopping */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		E7121D7C2F798F8600223775 /* P2PShopping */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				E786C4142F9E85D9005AE8F9 /* Exceptions for "P2PShopping" folder in "P2PShopping" target */,
+			);
 			path = P2PShopping;
 			sourceTree = "<group>";
 		};
@@ -330,10 +343,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_TelemetryEndpoint = "http://localhost:8080/api/telemetry/ping";
+				INFOPLIST_FILE = P2PShopping/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "P2P Shopping needs your location to track telemetry while the app is in the background.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "P2P Shopping needs your location to remember where you found items in the store.";
+				INFOPLIST_KEY_TelemetryEndpoint = "http://localhost:8080/api/telemetry/ping";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "location fetch";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -363,10 +379,13 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_TelemetryEndpoint = "https://api.p2p-shopping.com/api/telemetry/ping";
+				INFOPLIST_FILE = P2PShopping/Info.plist;
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "P2P Shopping needs your location to track telemetry while the app is in the background.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "P2P Shopping needs your location to remember where you found items in the store.";
+				INFOPLIST_KEY_TelemetryEndpoint = "https://api.p2p-shopping.com/api/telemetry/ping";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UIBackgroundModes = "location fetch";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

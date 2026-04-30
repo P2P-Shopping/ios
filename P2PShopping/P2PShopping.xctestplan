@@ -29,7 +29,7 @@
     {
       "target" : {
         "containerPath" : "container:P2PShopping.xcodeproj",
-        "identifier" : "P2PShoppingTests",
+        "identifier" : "E786C3AB2F9E59F7005AE8F9",
         "name" : "P2PShoppingTests"
       }
     }
