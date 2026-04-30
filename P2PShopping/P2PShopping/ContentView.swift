@@ -2,25 +2,48 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var locationManager: LocationPermissionManager
+    @EnvironmentObject private var locationService: LocationService
     @State private var isWebViewLoading = true
 
     var body: some View {
         // Full screen presentation once granted
         Group {
             if locationManager.permissionGranted {
-                ZStack {
-                    P2PWebView(
-                        url: URL(string: "https://p2p-shopping.app")!, 
-                        isLoading: $isWebViewLoading,
-                        permissionManager: locationManager
-                    )
-                    .ignoresSafeArea(edges: .bottom)
+                VStack(spacing: 0) {
+                    // UI pentru Task-ul #182 (Pornire/Oprire Background Tracking)
+                    if locationService.isTracking {
+                        Button(action: stopTrackingAction) {
+                            Label("Stop Background Tracking", systemImage: "stop.circle.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.red)
+                        .padding()
+                    } else {
+                        Button(action: startTrackingAction) {
+                            Label("Start Background Tracking", systemImage: "play.circle.fill")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.green)
+                        .padding()
+                    }
                     
-                    if isWebViewLoading {
-                        ProgressView("Loading...")
-                            .padding()
-                            .background(Color(UIColor.systemBackground).opacity(0.8))
-                            .cornerRadius(8)
+                    ZStack {
+                        P2PWebView(
+                            // Pentru dezvoltare locală, folosește adresa serverului tău. Schimbă portul dacă e necesar (ex: 3000).
+                            url: URL(string: "http://localhost:8080")!,
+                            isLoading: $isWebViewLoading,
+                            permissionManager: locationManager
+                        )
+                        .ignoresSafeArea(edges: .bottom)
+                        
+                        if isWebViewLoading {
+                            ProgressView("Loading...")
+                                .padding()
+                                .background(Color(UIColor.systemBackground).opacity(0.8))
+                                .cornerRadius(8)
+                        }
                     }
                 }
             } else if locationManager.permissionDenied {
@@ -42,10 +65,8 @@ struct ContentView: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
 
-                    Button("Open Settings") {
-                        locationManager.openAppSettings()
-                    }
-                    .buttonStyle(.borderedProminent)
+                    Button("Open Settings", action: openSettingsAction)
+                        .buttonStyle(.borderedProminent)
                 }
                 .padding()
             } else {
@@ -63,17 +84,35 @@ struct ContentView: View {
                         .foregroundColor(.secondary)
                         .padding(.horizontal)
 
-                    Button("Allow Location Access") {
-                        locationManager.requestWhenInUsePermission()
-                    }
-                    .buttonStyle(.borderedProminent)
+                    Button("Allow Location Access", action: allowLocationAction)
+                        .buttonStyle(.borderedProminent)
                 }
                 .padding()
             }
         }
     }
+    
+    // MARK: - Testable Actions
+    
+    func stopTrackingAction() {
+        locationService.stopTracking()
+    }
+    
+    func startTrackingAction() {
+        locationService.startTracking()
+    }
+    
+    func openSettingsAction() {
+        locationManager.openAppSettings()
+    }
+    
+    func allowLocationAction() {
+        locationManager.requestWhenInUsePermission()
+    }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(LocationPermissionManager())
+        .environmentObject(LocationService.shared)
 }
