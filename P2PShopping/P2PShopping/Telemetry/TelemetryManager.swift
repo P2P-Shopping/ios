@@ -59,9 +59,9 @@ class TelemetryManager {
                 storeId: storeId,
                 itemId: itemId,
                 triggerType: triggerType,
-                lat: latitude ?? 0.0,
-                lng: longitude ?? 0.0,
-                accuracy: Float(accuracy ?? 0.0),
+                lat: latitude,
+                lng: longitude,
+                accuracy: accuracy != nil ? Float(accuracy!) : nil,
                 timestamp: Int64(Date().timeIntervalSince1970 * 1000)
             )
             
@@ -106,16 +106,10 @@ class TelemetryManager {
                     "timestamp": ping.timestamp
                 ]
                 
-                // Dacă ambele sunt fix 0.0 înseamnă că nu aveam locație la momentul respectiv
-                if ping.lat != 0.0 || ping.lng != 0.0 {
-                    dict["lat"] = ping.lat
-                    dict["lng"] = ping.lng
-                    dict["accuracy"] = ping.accuracy
-                } else {
-                    dict["lat"] = NSNull()
-                    dict["lng"] = NSNull()
-                    dict["accuracy"] = NSNull()
-                }
+                dict["lat"] = ping.lat ?? NSNull()
+                dict["lng"] = ping.lng ?? NSNull()
+                dict["accuracy"] = ping.accuracy ?? (NSNull() as Any)
+                
                 return dict
             }
             

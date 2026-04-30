@@ -22,7 +22,6 @@ class LocationService: NSObject, ObservableObject {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        setupMotionManager()
     }
     
     func startTracking() {
@@ -30,6 +29,7 @@ class LocationService: NSObject, ObservableObject {
         locationManager.allowsBackgroundLocationUpdates = true
         locationManager.pausesLocationUpdatesAutomatically = false
         locationManager.startUpdatingLocation()
+        setupMotionManager()
         isTracking = true
         schedulePingTimer()
     }
@@ -37,6 +37,7 @@ class LocationService: NSObject, ObservableObject {
     func stopTracking() {
         print("LocationService: Oprire tracking...")
         locationManager.stopUpdatingLocation()
+        motionManager.stopAccelerometerUpdates()
         pingTimer?.invalidate()
         isTracking = false
     }

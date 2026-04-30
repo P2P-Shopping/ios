@@ -32,9 +32,8 @@ class TelemetryService {
     }
     
     private var batchEndpointURL: URL? {
-        // Înlocuim /ping cu /batch pentru endpoint-ul de sincronizare
-        guard let url = endpointURL?.absoluteString else { return nil }
-        return URL(string: url.replacingOccurrences(of: "/ping", with: "/batch"))
+        // Înlocuim componenta finală a căii (/ping) cu /batch pentru endpoint-ul de sincronizare
+        return endpointURL?.deletingLastPathComponent().appendingPathComponent("batch")
     }
     
     init(session: URLSessionProtocol = URLSession.shared) {

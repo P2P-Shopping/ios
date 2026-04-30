@@ -8,7 +8,7 @@ import Combine
 class NetworkMonitor: ObservableObject {
     static let shared = NetworkMonitor()
     
-    @Published var isConnected: Bool = true
+    @Published var isConnected: Bool = false
     
     private let monitor: NWPathMonitor
     private let queue = DispatchQueue(label: "NetworkMonitorQueue")
@@ -19,11 +19,13 @@ class NetworkMonitor: ObservableObject {
             let status = path.status == .satisfied
             // Folosim Task pentru a reveni pe MainActor în mod sigur (Swift 6 compliant)
             Task { @MainActor in
-                if status && !NetworkMonitor.shared.isConnected {
+                let wasConnected = NetworkMonitor.shared.isConnected
+                NetworkMonitor.shared.isConnected = status
+                
+                if status && !wasConnected {
                     print("NetworkMonitor: Conexiune restaurată! Declanșăm sincronizarea batch (Task #184)...")
                     NotificationCenter.default.post(name: .networkRestored, object: nil)
                 }
-                NetworkMonitor.shared.isConnected = status
             }
         }
         self.monitor.start(queue: queue)

@@ -67,6 +67,9 @@ final class TelemetryTests: XCTestCase {
         let telService = TelemetryService.shared
         
         // Flow Offline -> Online
+        let originalConnectivity = NetworkMonitor.shared.isConnected
+        defer { NetworkMonitor.shared.isConnected = originalConnectivity }
+        
         NetworkMonitor.shared.isConnected = false
         telManager.handleNewPing(storeId: "s", itemId: "i", triggerType: "t", latitude: 1, longitude: 1, accuracy: 1)
         NetworkMonitor.shared.isConnected = true

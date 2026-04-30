@@ -85,4 +85,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(LocationPermissionManager())
+        .environmentObject(LocationService.shared)
 }

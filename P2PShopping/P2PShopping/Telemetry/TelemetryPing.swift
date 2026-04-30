@@ -38,8 +38,20 @@ final class TelemetryPing {
 }
 
 extension UIDevice {
-    /// Returnează un ID unic pentru acest dispozitiv, cerut de Android (deviceId).
+    /// Returnează un ID unic pentru acest dispozitiv.
+    /// Salvează un fallback în UserDefaults dacă identifierForVendor nu este disponibil.
     static var uniqueId: String {
-        return current.identifierForVendor?.uuidString ?? UUID().uuidString
+        if let vendorId = current.identifierForVendor?.uuidString {
+            return vendorId
+        }
+        
+        let key = "P2PShopping_FallbackDeviceID"
+        if let savedId = UserDefaults.standard.string(forKey: key) {
+            return savedId
+        }
+        
+        let newId = UUID().uuidString
+        UserDefaults.standard.set(newId, forKey: key)
+        return newId
     }
 }
