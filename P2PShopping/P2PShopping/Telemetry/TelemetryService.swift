@@ -1,8 +1,10 @@
 import Foundation
+import UIKit
+import CoreLocation
 
 /// Protocol pentru a permite injectarea URLSession în teste.
 protocol URLSessionProtocol {
-    func dataTask(with request: URLRequest, completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
+    func dataTask(with request: URLRequest, completionHandler: @escaping @Sendable (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask
 }
 
 extension URLSession: URLSessionProtocol {}
@@ -23,8 +25,7 @@ class TelemetryService {
         }
         
         #if targetEnvironment(simulator)
-        // Fallback la localhost doar pe simulator dacă lipsește cheia în plist
-        return URL(string: "http://localhost:8080/api/telemetry/ping")
+        return URL(string: "http://localhost:8080/api/v1/telemetry/ping")
         #else
         return nil
         #endif
@@ -50,7 +51,7 @@ class TelemetryService {
         self.session = session
     }
     
-    /// Construiește payload-ul JSON. Task #34 & CodeRabbit fix
+    /// Construiește payload-ul JSON. Task #34 & #183
     func makePayload(
         storeId: String,
         itemId: String,
@@ -62,6 +63,7 @@ class TelemetryService {
         let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
         
         var payload: [String: Any] = [
+            "deviceId": UIDevice.uniqueId, // Adăugat conform noului model
             "storeId": storeId,
             "itemId": itemId,
             "triggerType": triggerType,
