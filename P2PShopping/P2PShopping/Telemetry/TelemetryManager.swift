@@ -61,7 +61,7 @@ class TelemetryManager {
                 triggerType: triggerType,
                 lat: latitude,
                 lng: longitude,
-                accuracy: accuracy != nil ? Float(accuracy!) : nil,
+                accuracy: Float(accuracy ?? 5.0),
                 timestamp: Int64(Date().timeIntervalSince1970 * 1000)
             )
             
@@ -102,13 +102,12 @@ class TelemetryManager {
                     "deviceId": ping.deviceId,
                     "storeId": ping.storeId,
                     "itemId": ping.itemId,
-                    "triggerType": ping.triggerType,
+                    "accuracyMeters": Double(ping.accuracy),
                     "timestamp": ping.timestamp
                 ]
                 
-                dict["lat"] = ping.lat ?? NSNull()
-                dict["lng"] = ping.lng ?? NSNull()
-                dict["accuracy"] = ping.accuracy ?? (NSNull() as Any)
+                dict["lat"] = ping.lat as Any
+                dict["lng"] = ping.lng as Any
                 
                 return dict
             }
