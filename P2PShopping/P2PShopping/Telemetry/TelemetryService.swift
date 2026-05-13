@@ -25,7 +25,7 @@ class TelemetryService {
         }
         
         #if targetEnvironment(simulator)
-        return URL(string: "http://localhost:8080/api/v1/telemetry/ping")
+        return URL(string: "http://localhost:8081/api/v1/telemetry/ping")
         #else
         return nil
         #endif
@@ -51,27 +51,24 @@ class TelemetryService {
     ) -> [String: Any] {
         let timestamp = Int64(Date().timeIntervalSince1970 * 1000)
         
-        var payload: [String: Any] = [
-            "deviceId": UIDevice.uniqueId, // Adăugat conform noului model
+        let payload: [String: Any] = [
+            "deviceId": UIDevice.uniqueId,
             "storeId": storeId,
             "itemId": itemId,
-            "triggerType": triggerType,
+            "lat": latitude ?? 0.0,
+            "lng": longitude ?? 0.0,
+            "accuracyMeters": accuracy ?? 5.0,
             "timestamp": timestamp
         ]
         
-        payload["accuracy"] = accuracy ?? NSNull()
-        
-        if let lat = latitude, let lng = longitude {
-            payload["lat"] = lat
-            payload["lng"] = lng
-        } else {
-            payload["lat"] = NSNull()
-            payload["lng"] = NSNull()
-        }
-        
         return payload
     }
-    
+
+    private var apiKey: String {
+        let key = "TelemetryAPIKey"
+        return Bundle.main.object(forInfoDictionaryKey: key) as? String ?? "p2p-telemetry-key-default"
+    }
+
     /// Trimite un ping de telemetrie către server.
     func sendLocationPing(
         storeId: String,
@@ -95,11 +92,13 @@ class TelemetryService {
             accuracy: accuracy
         )
         
-        print("TelemetryService: Sending ping to backend... [storeId: \(storeId), triggerType: \(triggerType)]")
+        print("TelemetryService: Sending ping to backend... [storeId: \(storeId), itemId: \(itemId)]")
         
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(UIDevice.uniqueId, forHTTPHeaderField: "X-Device-Id")
         
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
@@ -119,6 +118,9 @@ class TelemetryService {
                     print("TelemetryService: Success! Server returned 202 Accepted")
                 } else {
                     print("TelemetryService: Server returned status code \(httpResponse.statusCode)")
+                    if let d = data, let str = String(data: d, encoding: .utf8) {
+                        print("TelemetryService: Error body: \(str)")
+                    }
                 }
             }
         }.resume()
@@ -128,12 +130,17 @@ class TelemetryService {
     func sendBatchPings(payload: [[String: Any]]) async -> Bool {
         guard let url = batchEndpointURL else { return false }
         
+        // Wrap pings in the expected DTO structure: {"pings": [...]}
+        let wrappedPayload: [String: Any] = ["pings": payload]
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue(UIDevice.uniqueId, forHTTPHeaderField: "X-Device-Id")
         
         do {
-            request.httpBody = try JSONSerialization.data(withJSONObject: payload, options: [])
+            request.httpBody = try JSONSerialization.data(withJSONObject: wrappedPayload, options: [])
         } catch {
             print("TelemetryService: Eroare serializare batch JSON: \(error)")
             return false

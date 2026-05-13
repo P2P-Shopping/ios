@@ -68,7 +68,9 @@ class LocationService: NSObject, ObservableObject {
         pingTimer?.invalidate()
         let interval: TimeInterval = isMoving ? 5.0 : 30.0
         pingTimer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
-            self?.handleTimerTick()
+            Task { @MainActor in
+                self?.handleTimerTick()
+            }
         }
     }
     

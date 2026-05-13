@@ -7,5 +7,16 @@
 		<string>location</string>
 		<string>fetch</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>TelemetryEndpoint</key>
+	<string>http://localhost:8081/api/v1/telemetry/ping</string>
+	<key>TelemetryAPIKey</key>
+	<string>p2p-telemetry-key-default</string>
+	<key>WebAppURL</key>
+	<string>http://localhost:5173</string>
 </dict>
 </plist>
