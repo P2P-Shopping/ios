@@ -31,6 +31,16 @@ struct P2PWebView: UIViewRepresentable {
                 if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.authBridge) {
                     window.webkit.messageHandlers.authBridge.postMessage({action: "clearToken"});
                 }
+            },
+            openNativeCamera: function(callbackId) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.cameraBridge) {
+                    window.webkit.messageHandlers.cameraBridge.postMessage({action: "openNativeCamera", callbackId: callbackId});
+                }
+            },
+            postTelemetry: function(storeId, itemId, triggerType) {
+                if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.telemetryBridge) {
+                    window.webkit.messageHandlers.telemetryBridge.postMessage({action: "postTelemetry", storeId: storeId, itemId: itemId, triggerType: triggerType});
+                }
             }
         };
         """
@@ -45,8 +55,17 @@ struct P2PWebView: UIViewRepresentable {
         let authHandler = AuthBridgeHandler()
         config.userContentController.add(authHandler, name: "authBridge")
         
-        // Inițializăm cu frame .zero, SwiftUI va ajusta dimensiunea corespunzător
+        // Initializăm cu frame .zero, SwiftUI va ajusta dimensiunea corespunzător
         let webView = WKWebView(frame: .zero, configuration: config)
+        
+        // Bridge for Camera (Task #222)
+        let cameraHandler = CameraBridgeHandler(webView: webView)
+        config.userContentController.add(cameraHandler, name: "cameraBridge")
+
+        // Bridge for Telemetry (Task #217 parity)
+        let telemetryHandler = TelemetryBridgeHandler()
+        config.userContentController.add(telemetryHandler, name: "telemetryBridge")
+        
         webView.navigationDelegate = context.coordinator
         webView.backgroundColor = .clear
         
@@ -84,6 +103,14 @@ struct P2PWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             print("P2PWebView: Pagina s-a încărcat cu succes!")
             
+            // 1. Inject Token
+            injectToken(webView)
+            
+            // 2. Inject Auto-Ping Script (Checkbox Listener - Task #217 parity)
+            injectAutoPingScript(webView)
+        }
+        
+        private func injectToken(_ webView: WKWebView) {
             let service = Bundle.main.bundleIdentifier ?? "com.p2ps.P2PShopping"
             let account = "jwt_token"
             
@@ -117,6 +144,29 @@ struct P2PWebView: UIViewRepresentable {
                 """
                 webView.evaluateJavaScript(script, completionHandler: nil)
             }
+        }
+        
+        private func injectAutoPingScript(_ webView: WKWebView) {
+            let js = """
+            (function() {
+                document.addEventListener('change', function(e) {
+                    var target = e.target;
+                    if (target.type === 'checkbox' && target.checked) {
+                        var itemContainer = target.closest('li') || target.closest('[data-id]');
+                        var itemId = itemContainer ? (itemContainer.getAttribute('data-id') || itemContainer.id) : null;
+                        if (!itemId) {
+                            var nameEl = itemContainer ? itemContainer.querySelector('span') : null;
+                            itemId = nameEl ? nameEl.innerText.trim() : 'ui_item_' + Date.now();
+                        }
+                        var storeId = 'Lidl_Vite_Physical';
+                        if (window.P2PBridge && window.P2PBridge.postTelemetry) {
+                            window.P2PBridge.postTelemetry(storeId, itemId, 'WEB_UI_CHECKOFF');
+                        }
+                    }
+                }, true);
+            })();
+            """
+            webView.evaluateJavaScript(js, nil)
         }
         
         // Task #216: External Links Handler

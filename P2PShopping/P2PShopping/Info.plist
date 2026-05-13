@@ -29,5 +29,9 @@
 	<string>$(TELEMETRY_API_KEY)</string>
 	<key>WebAppURL</key>
 	<string>$(WEB_APP_URL)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to your camera to allow you to take photos of products and receipts for AI analysis.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to allow you to upload images of products and receipts for AI analysis.</string>
 </dict>
 </plist>
