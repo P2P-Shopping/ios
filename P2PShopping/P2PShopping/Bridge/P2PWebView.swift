@@ -83,14 +83,32 @@ struct P2PWebView: UIViewRepresentable {
         // Task #218: JWT Token Injection into WebView
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             print("P2PWebView: Pagina s-a încărcat cu succes!")
-            let defaults = UserDefaults.standard
-            if let token = defaults.string(forKey: "jwt_token"), !token.isEmpty {
+            
+            let service = Bundle.main.bundleIdentifier ?? "com.p2ps.P2PShopping"
+            let account = "jwt_token"
+            
+            let query: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: service,
+                kSecAttrAccount as String: account,
+                kSecReturnData as String: true,
+                kSecMatchLimit as String: kSecMatchLimitOne
+            ]
+            
+            var result: AnyObject?
+            let status = SecItemCopyMatching(query as CFDictionary, &result)
+            
+            if status == errSecSuccess, let data = result as? Data, let token = String(data: data, encoding: .utf8), !token.isEmpty {
+                // Encode token as JSON string to prevent JS injection
+                let encoder = JSONEncoder()
+                guard let encodedData = try? encoder.encode(token), let encodedToken = String(data: encodedData, encoding: .utf8) else { return }
+
                 let script = """
                 (function() {
                     try {
-                        localStorage.setItem('authToken', '\(token)');
+                        localStorage.setItem('authToken', \(encodedToken));
                         window.dispatchEvent(
-                            new CustomEvent('p2p:tokenReady', { detail: { token: '\(token)' } })
+                            new CustomEvent('p2p:tokenReady', { detail: { token: \(encodedToken) } })
                         );
                     } catch(e) {
                         console.error('[P2P iOS] Token injection failed:', e);
@@ -109,29 +127,39 @@ struct P2PWebView: UIViewRepresentable {
             }
             
             let host = url.host ?? ""
+            let scheme = url.scheme ?? ""
             print("P2PWebView: Verificăm navigare către: \(url.absoluteString)")
             
-            // Allow everything on localhost or 127.0.0.1
-            if host.contains("localhost") || host.contains("127.0.0.1") {
+            // 1. Whitelist local development addresses (exact matches only)
+            if host == "localhost" || host == "127.0.0.1" || host == "::1" {
                 decisionHandler(.allow)
                 return
             }
             
-            // Allow same origin
+            // 2. Allow same origin
             if let parentHost = parent.url.host, host == parentHost {
                 decisionHandler(.allow)
                 return
             }
             
-            // Redirect other http/https to system browser
-            if ["http", "https"].contains(url.scheme) {
+            // 3. Handle specific app-launch schemes
+            if ["tel", "mailto", "sms"].contains(scheme) {
+                print("P2PWebView: Redirectăm către aplicație externă: \(url.absoluteString)")
+                UIApplication.shared.open(url)
+                decisionHandler(.cancel)
+                return
+            }
+            
+            // 4. Redirect other http/https to system browser if not same origin/local
+            if ["http", "https"].contains(scheme) {
                 print("P2PWebView: Redirectăm către browser extern: \(url.absoluteString)")
                 UIApplication.shared.open(url)
                 decisionHandler(.cancel)
                 return
             }
             
-            decisionHandler(.allow)
+            // Default: cancel any other unknown schemes
+            decisionHandler(.cancel)
         }
     }
 }

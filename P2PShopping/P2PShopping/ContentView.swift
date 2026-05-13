@@ -5,9 +5,11 @@ struct ContentView: View {
     @EnvironmentObject private var locationService: LocationService
 
     private var webViewURL: URL {
-        let key = "WebAppURL"
-        let value = Bundle.main.object(forInfoDictionaryKey: key) as? String ?? "http://localhost:5173"
-        return URL(string: value)!
+        let fallbackURL = URL(string: "http://localhost:5173")!
+        guard let value = Bundle.main.object(forInfoDictionaryKey: "WebAppURL") as? String else {
+            return fallbackURL
+        }
+        return URL(string: value.trimmingCharacters(in: .whitespacesAndNewlines)) ?? fallbackURL
     }
 
     var body: some View {
@@ -19,11 +21,11 @@ struct ContentView: View {
                         .edgesIgnoringSafeArea(.all)
                 }
                 .onAppear {
-                        // Pornim background tracking implicit dacă este permis
-                        if !locationService.isTracking {
-                            locationService.startTracking()
-                        }
+                    // Pornim background tracking implicit dacă este permis
+                    if !locationService.isTracking {
+                        locationService.startTracking()
                     }
+                }
             } else {
                 VStack(spacing: 24) {
                     Image(systemName: "cart.fill")

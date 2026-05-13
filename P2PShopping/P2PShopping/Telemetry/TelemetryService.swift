@@ -44,7 +44,6 @@ class TelemetryService {
     func makePayload(
         storeId: String,
         itemId: String,
-        triggerType: String,
         latitude: Double?,
         longitude: Double?,
         accuracy: Double?
@@ -55,8 +54,8 @@ class TelemetryService {
             "deviceId": UIDevice.uniqueId,
             "storeId": storeId,
             "itemId": itemId,
-            "lat": latitude ?? 0.0,
-            "lng": longitude ?? 0.0,
+            "lat": latitude as Any, // Use Any to allow NSNull
+            "lng": longitude as Any,
             "accuracyMeters": accuracy ?? 5.0,
             "timestamp": timestamp
         ]
@@ -66,7 +65,10 @@ class TelemetryService {
 
     private var apiKey: String {
         let key = "TelemetryAPIKey"
-        return Bundle.main.object(forInfoDictionaryKey: key) as? String ?? "p2p-telemetry-key-default"
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String, !value.isEmpty else {
+            fatalError("TelemetryAPIKey is missing or empty in Info.plist. Ensure it is configured in the build settings.")
+        }
+        return value
     }
 
     /// Trimite un ping de telemetrie către server.
@@ -86,7 +88,6 @@ class TelemetryService {
         let payload = makePayload(
             storeId: storeId, 
             itemId: itemId, 
-            triggerType: triggerType, 
             latitude: latitude, 
             longitude: longitude, 
             accuracy: accuracy

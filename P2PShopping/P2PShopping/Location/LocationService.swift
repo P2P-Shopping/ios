@@ -76,9 +76,7 @@ class LocationService: NSObject, ObservableObject {
     
     /// Extras pentru Coverage
     func handleTimerTick() {
-        Task { @MainActor in
-            self.generatePing()
-        }
+        self.generatePing()
     }
     
     // Metode pentru teste

@@ -59,9 +59,9 @@ class TelemetryManager {
                 storeId: storeId,
                 itemId: itemId,
                 triggerType: triggerType,
-                lat: latitude ?? 0.0,
-                lng: longitude ?? 0.0,
-                accuracy: accuracy != nil ? Float(accuracy!) : 0.0,
+                lat: latitude,
+                lng: longitude,
+                accuracy: Float(accuracy ?? 5.0),
                 timestamp: Int64(Date().timeIntervalSince1970 * 1000)
             )
             
@@ -98,15 +98,16 @@ class TelemetryManager {
             
             // Construim array-ul JSON cerut de backend
             let batchPayload = pings.map { ping -> [String: Any] in
-                let dict: [String: Any] = [
+                var dict: [String: Any] = [
                     "deviceId": ping.deviceId,
                     "storeId": ping.storeId,
                     "itemId": ping.itemId,
-                    "lat": ping.lat,
-                    "lng": ping.lng,
                     "accuracyMeters": Double(ping.accuracy),
                     "timestamp": ping.timestamp
                 ]
+                
+                dict["lat"] = ping.lat as Any
+                dict["lng"] = ping.lng as Any
                 
                 return dict
             }

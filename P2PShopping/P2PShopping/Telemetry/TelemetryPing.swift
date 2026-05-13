@@ -11,8 +11,8 @@ final class TelemetryPing {
     var storeId: String
     var itemId: String
     var triggerType: String
-    var lat: Double
-    var lng: Double
+    var lat: Double?
+    var lng: Double?
     var accuracy: Float
     var timestamp: Int64
 
@@ -21,8 +21,8 @@ final class TelemetryPing {
          storeId: String,
          itemId: String,
          triggerType: String,
-         lat: Double,
-         lng: Double,
+         lat: Double?,
+         lng: Double?,
          accuracy: Float,
          timestamp: Int64) {
         self.id = id
